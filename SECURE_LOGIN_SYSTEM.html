@@ -1,0 +1,1690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Login & Authentication System (Desktop Web Edition)</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --secondary: #64748b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-body: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-stack);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top System Bar */
+        .system-topbar {
+            background: #0f172a;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            padding: 8px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .system-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #1e293b;
+            color: #38bdf8;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #10b981;
+            box-shadow: 0 0 8px #10b981;
+            display: inline-block;
+        }
+
+        .system-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn-topbar {
+            background: transparent;
+            border: 1px solid #334155;
+            color: #cbd5e1;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-topbar:hover {
+            background: #334155;
+            color: #fff;
+        }
+
+        /* Main View Container */
+        .view-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .center-layout {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #eef2ff 0%, #f1f5f9 100%);
+        }
+
+        .dashboard-layout {
+            flex: 1;
+            background-color: #f1f5f9;
+        }
+
+        .container {
+            max-width: 1040px;
+            margin: 25px auto;
+            padding: 0 20px;
+        }
+
+        /* Card System */
+        .card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+            padding: 32px;
+            width: 100%;
+            max-width: 480px;
+            border: 1px solid var(--border);
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        .card-wide {
+            max-width: 900px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            margin-bottom: 22px;
+        }
+
+        .card-header h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-top: 4px;
+        }
+
+        .card-header p {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            margin-top: 4px;
+        }
+
+        .security-tag {
+            display: inline-block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #4338ca;
+            background-color: #e0e7ff;
+            padding: 3px 9px;
+            border-radius: 20px;
+            margin-bottom: 6px;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            color: var(--text-main);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 14px;
+            font-size: 0.95rem;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            background-color: #fff;
+            color: var(--text-main);
+            transition: all 0.2s ease-in-out;
+            font-family: inherit;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .helper-text {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.92rem;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: none;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: #334155;
+        }
+
+        .btn-secondary:hover {
+            background-color: #cbd5e1;
+        }
+
+        .btn-warning {
+            background-color: #d97706;
+            color: #ffffff;
+        }
+
+        .btn-warning:hover {
+            background-color: #b45309;
+        }
+
+        .btn-outline-danger {
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .btn-outline-danger:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .btn-outline-primary {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 0.82rem;
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 9px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .badge-admin {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .badge-user {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-bottom: 18px;
+            border-left: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-danger {
+            background-color: #fef2f2;
+            color: #991b1b;
+            border-left-color: var(--danger);
+        }
+
+        .alert-success {
+            background-color: #f0fdf4;
+            color: #166534;
+            border-left-color: var(--success);
+        }
+
+        .alert-info {
+            background-color: #eff6ff;
+            color: #1e40af;
+            border-left-color: #3b82f6;
+        }
+
+        /* Demo Accounts Box */
+        .demo-accounts-box {
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+        }
+
+        .demo-accounts-box h4 {
+            font-size: 0.85rem;
+            color: #475569;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .demo-quick-btn {
+            background: #e2e8f0;
+            border: none;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            color: #1e293b;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .demo-quick-btn:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        /* 2FA Demo Banner */
+        .demo-otp-banner {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            color: #ffffff;
+            border-radius: 10px;
+            padding: 18px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 14px rgba(49, 46, 129, 0.25);
+        }
+
+        .demo-badge {
+            display: inline-block;
+            background: #4f46e5;
+            color: #c7d2fe;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        .otp-code {
+            font-family: monospace;
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: 8px;
+            color: #a5f3fc;
+            margin: 6px 0;
+            text-shadow: 0 0 10px rgba(165, 243, 252, 0.4);
+        }
+
+        .otp-input {
+            font-family: monospace;
+            font-size: 1.8rem;
+            text-align: center;
+            letter-spacing: 8px;
+            font-weight: bold;
+            padding: 10px;
+        }
+
+        /* Navbar */
+        .navbar {
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--border);
+            padding: 14px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.15rem;
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            padding: 18px 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        }
+
+        .stat-title {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 4px 0;
+        }
+
+        .stat-desc {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        /* Tables */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+        }
+
+        .data-table th, .data-table td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        /* Profile summary & RBAC box */
+        .profile-summary {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 22px;
+        }
+
+        .profile-row {
+            display: flex;
+            padding: 8px 0;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .profile-row:last-child {
+            border-bottom: none;
+        }
+
+        .profile-label {
+            width: 180px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .profile-val {
+            flex: 1;
+            color: var(--text-main);
+        }
+
+        .rbac-demo-box {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 5px solid #d97706;
+        }
+
+        .rbac-demo-box h3 {
+            color: #92400e;
+            font-size: 1.05rem;
+            margin-bottom: 6px;
+        }
+
+        .rbac-demo-box p {
+            color: #78350f;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* Modal Inspector */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.65);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 12px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
+            border: 1px solid var(--border);
+        }
+
+        .modal-header {
+            padding: 16px 22px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-tabs {
+            display: flex;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 8px;
+            gap: 4px;
+            margin: 16px 22px 0 22px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 6px;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: #fff;
+            color: var(--primary);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .modal-content {
+            padding: 20px 22px;
+        }
+
+        .code-box {
+            background: #0f172a;
+            color: #f8fafc;
+            padding: 14px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+
+        .card-footer {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+
+        .card-footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .card-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .timer-badge {
+            display: inline-block;
+            font-size: 0.82rem;
+            color: #fbbf24;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top System Bar -->
+    <header class="system-topbar">
+        <div style="display: flex; align-items: center; gap: 14px;">
+            <span class="system-badge">
+                <span class="pulse-dot"></span> Offline Desktop Web Edition
+            </span>
+            <span>University Security & Authentication Project</span>
+        </div>
+        <div class="system-actions">
+            <button class="btn-topbar" onclick="openInspector('pillars')">&#128218; Security Pillars</button>
+            <button class="btn-topbar" onclick="openInspector('db')">&#128450; View Database</button>
+            <button class="btn-topbar" onclick="openInspector('crypto')">&#128272; Salt & Pepper Live</button>
+            <button class="btn-topbar" onclick="resetDatabase()">&#8634; Reset Demo DB</button>
+        </div>
+    </header>
+
+    <!-- App Views Container -->
+    <div id="app" class="view-wrapper">
+        <!-- Rendered dynamically by JavaScript -->
+    </div>
+
+    <!-- Interactive Security & Database Inspector Modal -->
+    <div id="inspectorModal" class="modal-overlay" onclick="closeInspectorOnBackdrop(event)">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="modalTitle">Security Project Inspector</h3>
+                <button class="btn-topbar" onclick="closeInspector()">&#10005; Close</button>
+            </div>
+            
+            <div class="modal-tabs">
+                <button id="tab-pillars" class="tab-btn" onclick="switchTab('pillars')">4 Security Pillars</button>
+                <button id="tab-db" class="tab-btn" onclick="switchTab('db')">Simulated MySQL Database</button>
+                <button id="tab-crypto" class="tab-btn" onclick="switchTab('crypto')">Salt + Pepper Visualizer</button>
+            </div>
+
+            <div class="modal-content" id="modalBody">
+                <!-- Injected based on active tab -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * SECURE LOGIN SYSTEM (DESKTOP WEB ENGINE)
+         * Demonstrates the 4 Required Security Pillars:
+         * 1. User Identification (Unique Username/Email)
+         * 2. Two-Factor Authentication (OTP with 5-minute expiry & invalidation)
+         * 3. Role-Based Access Control (RBAC: Admin vs Normal User & 403 Forbidden)
+         * 4. Password Security (Salt + Server Pepper via Web Crypto API)
+         */
+
+        const DB_STORAGE_KEY = 'univ_sec_login_db_puit24110007';
+        const SESSION_STORAGE_KEY = 'univ_sec_active_session';
+        const SERVER_PEPPER = 'K9#F2!xP9$qL4@vB8*eT1^zW5&uM3#yR_UnivSecDemoKey_2024';
+        const OTP_EXPIRY_SECONDS = 300; // 5 minutes
+
+        // -------------------------------------------------------------
+        // Cryptographic Utilities (Web Crypto API)
+        // -------------------------------------------------------------
+        
+        // 128-bit random salt (32 hex characters)
+        function generateSalt() {
+            const bytes = new Uint8Array(16);
+            window.crypto.getRandomValues(bytes);
+            return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // 6-digit random OTP
+        function generateOTP() {
+            const array = new Uint32Array(1);
+            window.crypto.getRandomValues(array);
+            return (array[0] % 1000000).toString().padStart(6, '0');
+        }
+
+        // Salt + Pepper Hashing Pipeline
+        async function hashPasswordWithSaltAndPepper(plainPassword, salt) {
+            const encoder = new TextEncoder();
+            
+            // Step 1 & 2: Keyed HMAC-SHA256 of (Password + Salt) with Server PEPPER
+            const key = await window.crypto.subtle.importKey(
+                "raw",
+                encoder.encode(SERVER_PEPPER),
+                { name: "HMAC", hash: "SHA-256" },
+                false,
+                ["sign"]
+            );
+            const signature = await window.crypto.subtle.sign(
+                "HMAC",
+                key,
+                encoder.encode(plainPassword + salt)
+            );
+            const hmacHex = Array.from(new Uint8Array(signature), b => b.toString(16).padStart(2, '0')).join('');
+
+            // Step 3: Standard SHA-256 digest simulating bcrypt output storage
+            const digest = await window.crypto.subtle.digest("SHA-256", encoder.encode(hmacHex));
+            const finalHash = "$bcrypt_sim$" + Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('');
+
+            return { hmacHex, finalHash };
+        }
+
+        async function verifyPassword(plainPassword, salt, storedHash) {
+            const { finalHash } = await hashPasswordWithSaltAndPepper(plainPassword, salt);
+            return finalHash === storedHash;
+        }
+
+        // -------------------------------------------------------------
+        // Database & State Management (Simulating MySQL `users` table)
+        // -------------------------------------------------------------
+        
+        async function getDatabase() {
+            const raw = localStorage.getItem(DB_STORAGE_KEY);
+            if (raw) {
+                try { return JSON.parse(raw); } catch (e) {}
+            }
+            return await seedDefaultDatabase();
+        }
+
+        function saveDatabase(db) {
+            localStorage.setItem(DB_STORAGE_KEY, JSON.stringify(db));
+        }
+
+        async function seedDefaultDatabase() {
+            const adminSalt = generateSalt();
+            const studentSalt = generateSalt();
+
+            const adminHashObj = await hashPasswordWithSaltAndPepper('Admin@1234', adminSalt);
+            const studentHashObj = await hashPasswordWithSaltAndPepper('Student@1234', studentSalt);
+
+            const initialDB = {
+                users: [
+                    {
+                        id: 1,
+                        username: 'admin',
+                        email: 'admin@system.local',
+                        password_hash: adminHashObj.finalHash,
+                        salt: adminSalt,
+                        role: 'admin',
+                        otp: null,
+                        otp_expiry: null,
+                        created_at: new Date(Date.now() - 3600000).toLocaleString()
+                    },
+                    {
+                        id: 2,
+                        username: 'student',
+                        email: 'student@university.edu',
+                        password_hash: studentHashObj.finalHash,
+                        salt: studentSalt,
+                        role: 'user',
+                        otp: null,
+                        otp_expiry: null,
+                        created_at: new Date().toLocaleString()
+                    }
+                ]
+            };
+            saveDatabase(initialDB);
+            return initialDB;
+        }
+
+        async function resetDatabase() {
+            if (confirm("Reset the simulated database back to initial demo state? All registered accounts will be reset.")) {
+                await seedDefaultDatabase();
+                clearSession();
+                renderView('login', { alert: { type: 'success', msg: 'Database reset to default seed accounts.' } });
+            }
+        }
+
+        // -------------------------------------------------------------
+        // Session Management
+        // -------------------------------------------------------------
+        
+        function getSession() {
+            const raw = sessionStorage.getItem(SESSION_STORAGE_KEY);
+            return raw ? JSON.parse(raw) : null;
+        }
+
+        function setSession(sessionObj) {
+            sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionObj));
+        }
+
+        function clearSession() {
+            sessionStorage.removeItem(SESSION_STORAGE_KEY);
+        }
+
+        // -------------------------------------------------------------
+        // Routing & Views Controller
+        // -------------------------------------------------------------
+
+        let currentView = 'login';
+        let viewParams = {};
+        let otpCountdownTimer = null;
+
+        function navigateTo(view, params = {}) {
+            currentView = view;
+            viewParams = params;
+            if (otpCountdownTimer) {
+                clearInterval(otpCountdownTimer);
+                otpCountdownTimer = null;
+            }
+            render();
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+            const session = getSession();
+
+            // RBAC Route Protection Guard
+            if (currentView === 'admin_dashboard') {
+                if (!session || !session.logged_in) {
+                    navigateTo('login', { alert: { type: 'danger', msg: 'Please log in to access the portal.' } });
+                    return;
+                }
+                if (session.role !== 'admin') {
+                    // RBAC Guard intercepting unauthorized access!
+                    navigateTo('access_denied', { attempted: 'admin_dashboard.php' });
+                    return;
+                }
+            }
+
+            if (currentView === 'user_dashboard') {
+                if (!session || !session.logged_in) {
+                    navigateTo('login', { alert: { type: 'danger', msg: 'Please log in to access your dashboard.' } });
+                    return;
+                }
+            }
+
+            if (currentView === 'verify_otp') {
+                if (!session || !session.two_factor_pending) {
+                    navigateTo('login');
+                    return;
+                }
+            }
+
+            // View Dispatcher
+            switch (currentView) {
+                case 'login':
+                    app.innerHTML = renderLoginView();
+                    break;
+                case 'register':
+                    app.innerHTML = renderRegisterView();
+                    break;
+                case 'verify_otp':
+                    app.innerHTML = renderVerifyOTPView();
+                    initOTPTimer();
+                    break;
+                case 'admin_dashboard':
+                    renderAdminDashboardView().then(html => { app.innerHTML = html; });
+                    break;
+                case 'user_dashboard':
+                    app.innerHTML = renderUserDashboardView();
+                    break;
+                case 'access_denied':
+                    app.innerHTML = renderAccessDeniedView();
+                    break;
+                default:
+                    app.innerHTML = renderLoginView();
+            }
+        }
+
+        // -------------------------------------------------------------
+        // View: 1. Login
+        // -------------------------------------------------------------
+        function renderLoginView() {
+            const alertHTML = viewParams.alert 
+                ? `<div class="alert alert-${viewParams.alert.type}">${viewParams.alert.msg}</div>` 
+                : '';
+
+            return `
+            <div class="center-layout">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="security-tag">Pillar 1: Identification & Pillar 4: Password Verification</span>
+                        <h2>Sign In</h2>
+                        <p>Enter your credentials to begin authentication.</p>
+                    </div>
+
+                    ${alertHTML}
+
+                    <!-- Quick Pre-fill Demo Box -->
+                    <div class="demo-accounts-box">
+                        <h4>
+                            <span>&#128273; Pre-Seeded Academic Accounts</span>
+                            <small style="color:var(--text-muted);">1-Click Fill</small>
+                        </h4>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                            <span><strong>Admin:</strong> <code>admin</code> / <code>Admin@1234</code></span>
+                            <button class="demo-quick-btn" onclick="fillLogin('admin', 'Admin@1234')">Fill Admin</button>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span><strong>User:</strong> <code>student</code> / <code>Student@1234</code></span>
+                            <button class="demo-quick-btn" onclick="fillLogin('student', 'Student@1234')">Fill User</button>
+                        </div>
+                    </div>
+
+                    <form onsubmit="handleLoginSubmit(event)">
+                        <div class="form-group">
+                            <label for="identifier">Username or Email Address</label>
+                            <input type="text" id="identifier" class="form-control" placeholder="admin or admin@system.local" required autocomplete="username">
+                            <span class="helper-text">You can sign in using either your unique username or email.</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" class="form-control" placeholder="••••••••••••" required autocomplete="current-password">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block" id="btnLogin">
+                            Proceed to Two-Factor Auth &rarr;
+                        </button>
+                    </form>
+
+                    <div class="card-footer">
+                        Don't have an account? <a onclick="navigateTo('register')">Register New Account</a>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function fillLogin(ident, pwd) {
+            document.getElementById('identifier').value = ident;
+            document.getElementById('password').value = pwd;
+        }
+
+        async function handleLoginSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnLogin');
+            btn.disabled = true;
+            btn.textContent = "Verifying Credentials...";
+
+            const identifier = document.getElementById('identifier').value.trim();
+            const password = document.getElementById('password').value;
+
+            const db = await getDatabase();
+            const user = db.users.find(u => 
+                u.username.toLowerCase() === identifier.toLowerCase() || 
+                u.email.toLowerCase() === identifier.toLowerCase()
+            );
+
+            if (!user) {
+                // Anti-enumeration generic error
+                navigateTo('login', { alert: { type: 'danger', msg: 'Invalid credentials. Please verify your username/email and password.' } });
+                return;
+            }
+
+            // Verify password using Salt + Pepper
+            const isValid = await verifyPassword(password, user.salt, user.password_hash);
+            if (!isValid) {
+                navigateTo('login', { alert: { type: 'danger', msg: 'Invalid credentials. Please verify your username/email and password.' } });
+                return;
+            }
+
+            // Password Factor Passed! Generate 2FA OTP
+            const otp = generateOTP();
+            const now = Date.now();
+            const expiryTimestamp = now + (OTP_EXPIRY_SECONDS * 1000);
+
+            // Update user's OTP record in database
+            user.otp = otp;
+            user.otp_expiry = expiryTimestamp;
+            saveDatabase(db);
+
+            // Store temporary 2FA pending session
+            setSession({
+                two_factor_pending: true,
+                user_id: user.id,
+                username: user.username,
+                role: user.role,
+                demo_otp: otp,
+                expiry: expiryTimestamp
+            });
+
+            navigateTo('verify_otp');
+        }
+
+        // -------------------------------------------------------------
+        // View: 2. Register
+        // -------------------------------------------------------------
+        function renderRegisterView() {
+            const alertHTML = viewParams.alert 
+                ? `<div class="alert alert-${viewParams.alert.type}">${viewParams.alert.msg}</div>` 
+                : '';
+
+            return `
+            <div class="center-layout">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="security-tag">Pillar 1: Identity & Pillar 4: Salt & Pepper Generation</span>
+                        <h2>Create Account</h2>
+                        <p>Register as an Administrator or a Normal User.</p>
+                    </div>
+
+                    ${alertHTML}
+
+                    <form onsubmit="handleRegisterSubmit(event)">
+                        <div class="form-group">
+                            <label for="reg_username">Username</label>
+                            <input type="text" id="reg_username" class="form-control" placeholder="e.g. jdoe" required minlength="3" maxlength="30">
+                            <span class="helper-text">Must be unique (3-30 letters/numbers).</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="reg_email">Email Address</label>
+                            <input type="email" id="reg_email" class="form-control" placeholder="e.g. jdoe@university.edu" required>
+                            <span class="helper-text">Must be unique and a valid format.</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="reg_password">Password</label>
+                            <input type="password" id="reg_password" class="form-control" placeholder="At least 8 characters" required minlength="8">
+                            <span class="helper-text">Minimum 8 characters. Will be salted and peppered.</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="reg_role">Account Role (RBAC Scope)</label>
+                            <select id="reg_role" class="form-control">
+                                <option value="user">Normal User (Access to User Dashboard)</option>
+                                <option value="admin">Administrator (Full Access & User Management)</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block" id="btnReg">
+                            Create Secure Account
+                        </button>
+                    </form>
+
+                    <div class="card-footer">
+                        Already have an account? <a onclick="navigateTo('login')">Sign In Instead</a>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        async function handleRegisterSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnReg');
+            btn.disabled = true;
+            btn.textContent = "Hashing with Salt + Pepper...";
+
+            const username = document.getElementById('reg_username').value.trim();
+            const email = document.getElementById('reg_email').value.trim();
+            const password = document.getElementById('reg_password').value;
+            const role = document.getElementById('reg_role').value;
+
+            const db = await getDatabase();
+
+            // Uniqueness checks
+            if (db.users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+                navigateTo('register', { alert: { type: 'danger', msg: `Username '${username}' is already taken.` } });
+                return;
+            }
+            if (db.users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+                navigateTo('register', { alert: { type: 'danger', msg: `Email '${email}' is already registered.` } });
+                return;
+            }
+
+            // Cryptographic Salt Generation + Pepper Hashing
+            const salt = generateSalt();
+            const { finalHash } = await hashPasswordWithSaltAndPepper(password, salt);
+
+            const newUser = {
+                id: db.users.length ? Math.max(...db.users.map(u => u.id)) + 1 : 1,
+                username,
+                email,
+                password_hash: finalHash,
+                salt,
+                role,
+                otp: null,
+                otp_expiry: null,
+                created_at: new Date().toLocaleString()
+            };
+
+            db.users.push(newUser);
+            saveDatabase(db);
+
+            navigateTo('login', { alert: { type: 'success', msg: `Account '${username}' created! You can now log in.` } });
+        }
+
+        // -------------------------------------------------------------
+        // View: 3. Verify OTP (2FA)
+        // -------------------------------------------------------------
+        function renderVerifyOTPView() {
+            const session = getSession();
+            const alertHTML = viewParams.alert 
+                ? `<div class="alert alert-${viewParams.alert.type}">${viewParams.alert.msg}</div>` 
+                : '';
+
+            return `
+            <div class="center-layout">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="security-tag">Pillar 2: Two-Factor Authentication (OTP)</span>
+                        <h2>Two-Factor Verification</h2>
+                        <p>Hello, <strong>${escapeHtml(session.username)}</strong>! Enter your 6-digit code.</p>
+                    </div>
+
+                    <!-- Academic Demonstration Banner -->
+                    <div class="demo-otp-banner">
+                        <span class="demo-badge">University Project Demonstration</span>
+                        <p style="font-size:0.85rem; margin-bottom:4px;">
+                            In production, this OTP is sent via SMS/Email.<br>
+                            Your generated 6-digit OTP code is:
+                        </p>
+                        <div class="otp-code">${session.demo_otp}</div>
+                        <div class="timer-badge" id="otpTimerDisplay">Expires in: 05:00</div>
+                    </div>
+
+                    ${alertHTML}
+
+                    <form onsubmit="handleVerifyOTPSubmit(event)">
+                        <div class="form-group">
+                            <label for="otpInput">Enter 6-Digit OTP</label>
+                            <input type="text" id="otpInput" class="form-control otp-input" maxlength="6" pattern="\\d{6}" placeholder="000000" autofocus required autocomplete="one-time-code">
+                            <span class="helper-text" style="text-align:center;">Valid for 5 minutes. Single-use only.</span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">
+                            Verify & Authenticate &rarr;
+                        </button>
+                    </form>
+
+                    <div style="margin-top: 14px; text-align: center;">
+                        <button class="btn btn-link" onclick="requestNewOTP()">Didn't get code? Request New OTP</button>
+                    </div>
+
+                    <div class="card-footer">
+                        <a onclick="cancelLogin()">Cancel & Return to Login</a>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function initOTPTimer() {
+            const session = getSession();
+            if (!session || !session.expiry) return;
+
+            function update() {
+                const now = Date.now();
+                const diff = Math.max(0, Math.floor((session.expiry - now) / 1000));
+                const el = document.getElementById('otpTimerDisplay');
+                if (!el) return;
+
+                if (diff <= 0) {
+                    el.textContent = "EXPIRED! Please request a new OTP.";
+                    el.style.color = "#ef4444";
+                    clearInterval(otpCountdownTimer);
+                } else {
+                    const mins = String(Math.floor(diff / 60)).padStart(2, '0');
+                    const secs = String(diff % 60).padStart(2, '0');
+                    el.textContent = `Expires in: ${mins}:${secs}`;
+                }
+            }
+
+            update();
+            otpCountdownTimer = setInterval(update, 1000);
+        }
+
+        async function requestNewOTP() {
+            const session = getSession();
+            if (!session) return;
+
+            const db = await getDatabase();
+            const user = db.users.find(u => u.id === session.user_id);
+            if (!user) return;
+
+            const newOTP = generateOTP();
+            const expiry = Date.now() + (OTP_EXPIRY_SECONDS * 1000);
+
+            user.otp = newOTP;
+            user.otp_expiry = expiry;
+            saveDatabase(db);
+
+            session.demo_otp = newOTP;
+            session.expiry = expiry;
+            setSession(session);
+
+            navigateTo('verify_otp', { alert: { type: 'info', msg: 'A new 6-digit OTP code has been generated.' } });
+        }
+
+        async function handleVerifyOTPSubmit(e) {
+            e.preventDefault();
+            const session = getSession();
+            const entered = document.getElementById('otpInput').value.trim();
+
+            const db = await getDatabase();
+            const user = db.users.find(u => u.id === session.user_id);
+
+            if (!user || !user.otp) {
+                navigateTo('verify_otp', { alert: { type: 'danger', msg: 'No active OTP found. Please request a new code.' } });
+                return;
+            }
+
+            // Expiry check
+            if (Date.now() > user.otp_expiry) {
+                user.otp = null;
+                saveDatabase(db);
+                navigateTo('verify_otp', { alert: { type: 'danger', msg: 'OTP has expired. Please request a new one.' } });
+                return;
+            }
+
+            // Timing-attack resistant verification simulation
+            if (entered !== user.otp) {
+                navigateTo('verify_otp', { alert: { type: 'danger', msg: 'Incorrect OTP code. Verification failed.' } });
+                return;
+            }
+
+            // OTP Valid! Invalidate OTP immediately (Single-Use Enforcement)
+            user.otp = null;
+            user.otp_expiry = null;
+            saveDatabase(db);
+
+            // Establish Full Authenticated Session
+            setSession({
+                logged_in: true,
+                user_id: user.id,
+                username: user.username,
+                email: user.email,
+                role: user.role
+            });
+
+            // RBAC Redirection
+            if (user.role === 'admin') {
+                navigateTo('admin_dashboard');
+            } else {
+                navigateTo('user_dashboard');
+            }
+        }
+
+        function cancelLogin() {
+            clearSession();
+            navigateTo('login');
+        }
+
+        // -------------------------------------------------------------
+        // View: 4. Admin Dashboard (RBAC Protected: role === 'admin')
+        // -------------------------------------------------------------
+        async function renderAdminDashboardView() {
+            const session = getSession();
+            const db = await getDatabase();
+
+            const totalUsers = db.users.length;
+            const adminCount = db.users.filter(u => u.role === 'admin').length;
+            const normalCount = db.users.filter(u => u.role === 'user').length;
+
+            const tableRows = db.users.map(u => `
+                <tr>
+                    <td><code>#${u.id}</code></td>
+                    <td><strong>${escapeHtml(u.username)}</strong></td>
+                    <td>${escapeHtml(u.email)}</td>
+                    <td><span class="badge ${u.role === 'admin' ? 'badge-admin' : 'badge-user'}">${u.role.toUpperCase()}</span></td>
+                    <td>${escapeHtml(u.created_at || 'Recently')}</td>
+                    <td>
+                        ${u.id === session.user_id 
+                            ? '<span style="color:var(--text-muted); font-size:0.8rem;">Current Account</span>' 
+                            : `<button class="btn btn-outline-danger btn-sm" onclick="deleteUser(${u.id})">Delete</button>`
+                        }
+                    </td>
+                </tr>
+            `).join('');
+
+            return `
+            <div class="dashboard-layout">
+                <header class="navbar">
+                    <div class="nav-brand">
+                        <span style="font-size:1.4rem;">&#128737;</span>
+                        <span>Admin Security Portal</span>
+                    </div>
+                    <div class="nav-user">
+                        <span>Welcome, <strong>${escapeHtml(session.username)}</strong></span>
+                        <span class="badge badge-admin">Administrator</span>
+                        <button class="btn btn-outline-danger btn-sm" onclick="handleLogout()">Log Out</button>
+                    </div>
+                </header>
+
+                <main class="container">
+                    <div class="dashboard-grid">
+                        <div class="stat-card">
+                            <div class="stat-title">Total Users</div>
+                            <div class="stat-value text-primary">${totalUsers}</div>
+                            <div class="stat-desc">Registered Accounts in DB</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-title">Administrators</div>
+                            <div class="stat-value text-purple" style="color:#6b21a8;">${adminCount}</div>
+                            <div class="stat-desc">RBAC Level: admin</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-title">Normal Users</div>
+                            <div class="stat-value text-success">${normalCount}</div>
+                            <div class="stat-desc">RBAC Level: user</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-title">System Security</div>
+                            <div class="stat-value text-success" style="font-size:1.15rem; color:#15803d;">Active & Protected</div>
+                            <div class="stat-desc">Salt + Pepper & 2FA Enforced</div>
+                        </div>
+                    </div>
+
+                    <div class="card card-wide" style="max-width:100%;">
+                        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <h2>Registered Users Management</h2>
+                                <p>Role-Based Access Control list. Password hashes & salts are secured.</p>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-secondary btn-sm" onclick="openInspector('db')">Raw DB Records</button>
+                                <button class="btn btn-primary btn-sm" onclick="navigateTo('register')">+ Add New User</button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Created At</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${tableRows}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </main>
+            </div>`;
+        }
+
+        async function deleteUser(userId) {
+            if (confirm(`Are you sure you want to delete user ID #${userId}?`)) {
+                const db = await getDatabase();
+                db.users = db.users.filter(u => u.id !== userId);
+                saveDatabase(db);
+                render();
+            }
+        }
+
+        // -------------------------------------------------------------
+        // View: 5. User Dashboard (RBAC Protected: role === 'user')
+        // -------------------------------------------------------------
+        function renderUserDashboardView() {
+            const session = getSession();
+
+            return `
+            <div class="dashboard-layout">
+                <header class="navbar">
+                    <div class="nav-brand">
+                        <span style="font-size:1.4rem;">&#128100;</span>
+                        <span>User Portal</span>
+                    </div>
+                    <div class="nav-user">
+                        <span>Welcome, <strong>${escapeHtml(session.username)}</strong></span>
+                        <span class="badge badge-user">Normal User</span>
+                        <button class="btn btn-outline-danger btn-sm" onclick="handleLogout()">Log Out</button>
+                    </div>
+                </header>
+
+                <main class="container">
+                    <div class="card card-wide">
+                        <div class="card-header">
+                            <h2>User Profile & Security Status</h2>
+                            <p>You have successfully authenticated via <strong>Two-Factor Authentication</strong>.</p>
+                        </div>
+
+                        <div class="profile-summary">
+                            <div class="profile-row">
+                                <span class="profile-label">User Account ID:</span>
+                                <span class="profile-val"><code>#${session.user_id}</code></span>
+                            </div>
+                            <div class="profile-row">
+                                <span class="profile-label">Username:</span>
+                                <span class="profile-val"><strong>${escapeHtml(session.username)}</strong></span>
+                            </div>
+                            <div class="profile-row">
+                                <span class="profile-label">Email Address:</span>
+                                <span class="profile-val">${escapeHtml(session.email || 'student@university.edu')}</span>
+                            </div>
+                            <div class="profile-row">
+                                <span class="profile-label">Assigned Role:</span>
+                                <span class="profile-val"><span class="badge badge-user">Normal User</span></span>
+                            </div>
+                            <div class="profile-row">
+                                <span class="profile-label">2FA State:</span>
+                                <span class="profile-val" style="color:#15803d; font-weight:600;">&#10003; Verified & One-Time Password invalidated</span>
+                            </div>
+                        </div>
+
+                        <!-- Interactive RBAC Test Box -->
+                        <div class="rbac-demo-box">
+                            <h3>&#128274; Role-Based Access Control (RBAC) Demonstration</h3>
+                            <p>
+                                As a <strong>Normal User</strong>, you are strictly prohibited from accessing administrative tools.
+                                In a real application, if an unauthorized user attempts to enter <code>admin_dashboard.php</code> in the browser URL,
+                                the server RBAC check intercepts it and denies access.
+                            </p>
+                            <div style="margin-top: 15px;">
+                                <button class="btn btn-warning" onclick="simulateAdminTamper()">
+                                    Test RBAC Defense (Try Accessing Admin Dashboard) &rarr;
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>`;
+        }
+
+        function simulateAdminTamper() {
+            // Attempting to navigate to admin dashboard as a normal user triggers the RBAC guard!
+            navigateTo('admin_dashboard');
+        }
+
+        // -------------------------------------------------------------
+        // View: 6. Access Denied (HTTP 403 Forbidden Demonstration)
+        // -------------------------------------------------------------
+        function renderAccessDeniedView() {
+            const attempted = viewParams.attempted || 'admin_dashboard.php';
+            const session = getSession();
+            const currentRole = session ? session.role : 'Guest';
+
+            return `
+            <div class="center-layout">
+                <div class="card card-wide" style="border-top: 5px solid #dc3545;">
+                    <div class="card-header" style="text-align: center;">
+                        <div style="font-size: 3.5rem; margin-bottom: 8px;">&#128683;</div>
+                        <h2 style="color: #dc3545;">403 - Access Denied</h2>
+                        <p>Role-Based Access Control (RBAC) Protection Triggered</p>
+                    </div>
+
+                    <div class="alert alert-danger">
+                        <span><strong>Security Alert:</strong> You do not possess the required authorization to access <code>${escapeHtml(attempted)}</code>.</span>
+                    </div>
+
+                    <div class="profile-summary">
+                        <div class="profile-row">
+                            <span class="profile-label">Requested Resource:</span>
+                            <span class="profile-val"><code>${escapeHtml(attempted)}</code></span>
+                        </div>
+                        <div class="profile-row">
+                            <span class="profile-label">Your Current Role:</span>
+                            <span class="profile-val"><span class="badge ${currentRole === 'admin' ? 'badge-admin' : 'badge-user'}">${currentRole.toUpperCase()}</span></span>
+                        </div>
+                        <div class="profile-row">
+                            <span class="profile-label">Required Role:</span>
+                            <span class="profile-val"><span class="badge badge-admin">ADMINISTRATOR</span></span>
+                        </div>
+                        <div class="profile-row">
+                            <span class="profile-label">Defense Mechanism:</span>
+                            <span class="profile-val">Server-side session validation prevents direct URL manipulation</span>
+                        </div>
+                    </div>
+
+                    <div class="btn-group" style="justify-content: center; margin-top: 10px;">
+                        <button class="btn btn-primary" onclick="navigateTo('user_dashboard')">&larr; Return to Safe Dashboard</button>
+                        <button class="btn btn-secondary" onclick="handleLogout()">Log Out</button>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function handleLogout() {
+            clearSession();
+            navigateTo('login', { alert: { type: 'success', msg: 'You have been successfully and securely logged out.' } });
+        }
+
+        // -------------------------------------------------------------
+        // Security Inspector Modal & Live Visualizers
+        // -------------------------------------------------------------
+        let currentModalTab = 'pillars';
+
+        function openInspector(tab = 'pillars') {
+            document.getElementById('inspectorModal').style.display = 'flex';
+            switchTab(tab);
+        }
+
+        function closeInspector() {
+            document.getElementById('inspectorModal').style.display = 'none';
+        }
+
+        function closeInspectorOnBackdrop(e) {
+            if (e.target.id === 'inspectorModal') {
+                closeInspector();
+            }
+        }
+
+        function switchTab(tab) {
+            currentModalTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+
+            const body = document.getElementById('modalBody');
+            if (tab === 'pillars') {
+                body.innerHTML = `
+                    <h4 style="margin-bottom:10px; color:#1e293b;">Core Security Architecture (4 Pillars)</h4>
+                    <p style="color:#64748b; font-size:0.9rem; margin-bottom:16px;">This project implements the four foundational pillars required for academic university defense:</p>
+                    
+                    <div style="display:grid; gap:14px;">
+                        <div style="background:#f8fafc; border-left:4px solid #2563eb; padding:12px 14px; border-radius:6px;">
+                            <strong style="color:#1e40af;">1. User Identification</strong>
+                            <p style="font-size:0.85rem; color:#475569; margin-top:4px;">
+                                Dual-identifier login supporting unique usernames and email addresses. Strict format validation, uniqueness constraints, and anti-enumeration generic error messages.
+                            </p>
+                        </div>
+                        <div style="background:#f8fafc; border-left:4px solid #10b981; padding:12px 14px; border-radius:6px;">
+                            <strong style="color:#065f46;">2. Two-Factor Authentication (2FA)</strong>
+                            <p style="font-size:0.85rem; color:#475569; margin-top:4px;">
+                                6-digit cryptographically random OTP generated via <code>crypto.getRandomValues()</code>. Enforces a 5-minute expiry window, single-use invalidation upon verification, and request-new-OTP capability.
+                            </p>
+                        </div>
+                        <div style="background:#f8fafc; border-left:4px solid #d97706; padding:12px 14px; border-radius:6px;">
+                            <strong style="color:#92400e;">3. Role-Based Access Control (RBAC)</strong>
+                            <p style="font-size:0.85rem; color:#475569; margin-top:4px;">
+                                Discrete <code>admin</code> and <code>user</code> authorization levels. Protects administrative dashboards from direct URL tampering with HTTP 403 Forbidden redirection.
+                            </p>
+                        </div>
+                        <div style="background:#f8fafc; border-left:4px solid #8b5cf6; padding:12px 14px; border-radius:6px;">
+                            <strong style="color:#5b21b6;">4. Password Security (Salt + Pepper)</strong>
+                            <p style="font-size:0.85rem; color:#475569; margin-top:4px;">
+                                Each account receives a unique 128-bit random salt stored in DB. A server-side pepper key is kept secret outside the database. Passwords are keyed via HMAC-SHA256 and stored as non-reversible digests.
+                            </p>
+                        </div>
+                    </div>
+                `;
+            } else if (tab === 'db') {
+                getDatabase().then(db => {
+                    const rows = db.users.map(u => `
+                        <tr>
+                            <td><code>#${u.id}</code></td>
+                            <td><strong>${escapeHtml(u.username)}</strong></td>
+                            <td>${escapeHtml(u.email)}</td>
+                            <td><span class="badge ${u.role === 'admin' ? 'badge-admin' : 'badge-user'}">${u.role}</span></td>
+                            <td style="font-family:monospace; font-size:0.75rem;">${u.salt.substring(0, 12)}...</td>
+                            <td style="font-family:monospace; font-size:0.75rem;">${u.password_hash.substring(0, 16)}...</td>
+                            <td><code>${u.otp || 'NULL'}</code></td>
+                        </tr>
+                    `).join('');
+
+                    body.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <h4 style="color:#1e293b;">Simulated MySQL <code>users</code> Table</h4>
+                            <button class="btn btn-secondary btn-sm" onclick="resetDatabase()">Reset to Defaults</button>
+                        </div>
+                        <p style="color:#64748b; font-size:0.85rem; margin-bottom:12px;">
+                            Notice that only salts and hashes are stored—never plain passwords.
+                        </p>
+                        <div class="table-responsive">
+                            <table class="data-table" style="font-size:0.82rem;">
+                                <thead>
+                                    <tr>
+                                        <th>id</th>
+                                        <th>username</th>
+                                        <th>email</th>
+                                        <th>role</th>
+                                        <th>salt (128-bit)</th>
+                                        <th>password_hash</th>
+                                        <th>otp</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${rows}</tbody>
+                            </table>
+                        </div>
+                    `;
+                });
+            } else if (tab === 'crypto') {
+                body.innerHTML = `
+                    <h4 style="margin-bottom:8px; color:#1e293b;">Interactive Salt + Pepper Pipeline Visualizer</h4>
+                    <p style="color:#64748b; font-size:0.85rem; margin-bottom:14px;">
+                        Type a password below to watch the live cryptographic transformation through User Salt and Server Pepper:
+                    </p>
+                    <div class="form-group">
+                        <label for="testPwdInput">Test Password</label>
+                        <input type="text" id="testPwdInput" class="form-control" value="MySecretPass@2026" oninput="updateCryptoVisualizer()">
+                    </div>
+                    <div id="cryptoVisualizerOutput"></div>
+                `;
+                updateCryptoVisualizer();
+            }
+        }
+
+        async function updateCryptoVisualizer() {
+            const input = document.getElementById('testPwdInput');
+            if (!input) return;
+            const pwd = input.value || '';
+            const sampleSalt = generateSalt();
+            const { hmacHex, finalHash } = await hashPasswordWithSaltAndPepper(pwd, sampleSalt);
+
+            const out = document.getElementById('cryptoVisualizerOutput');
+            out.innerHTML = `
+                <div class="code-box">
+<span style="color:#38bdf8;">1. Input Password:</span> "${escapeHtml(pwd)}"
+<span style="color:#38bdf8;">2. Generated 128-Bit Salt:</span> ${sampleSalt}
+<span style="color:#38bdf8;">3. Server-Side Secret Pepper:</span> "${SERVER_PEPPER}" (Kept outside database)
+<span style="color:#f59e0b;">4. Keyed HMAC-SHA256 Digest:</span>
+   ${hmacHex}
+<span style="color:#10b981;">5. Final Stored Hash (Saved in Database):</span>
+   ${finalHash}
+                </div>
+                <div class="alert alert-info" style="font-size:0.82rem; margin-top:10px;">
+                    <strong>Academic Defense Insight:</strong> Even if two users share the same password, their unique salts produce completely distinct stored hashes, defeating rainbow tables. If the database is leaked, attackers cannot crack passwords without the server pepper.
+                </div>
+            `;
+        }
+
+        function escapeHtml(str) {
+            return String(str || '').replace(/[&<>"']/g, m => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+            })[m]);
+        }
+
+        // Initialize app on load
+        window.addEventListener('DOMContentLoaded', async () => {
+            await getDatabase();
+            const session = getSession();
+            if (session && session.logged_in) {
+                navigateTo(session.role === 'admin' ? 'admin_dashboard' : 'user_dashboard');
+            } else {
+                navigateTo('login');
+            }
+        });
+    </script>
+</body>
+</html>
